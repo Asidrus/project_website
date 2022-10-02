@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {%load static %}
+    <meta charset="UTF-8">
+    <title>Заказ</title>
+</head>
+<body>
+<div class="container" style="width=1200px; height=250px;">
+    <div id="carouselExampleIndicators" class="carousel slide" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active"
+                    aria-current="true" aria-label="Slide 1"></button>
+            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1"
+                    aria-label="Slide 2"></button>
+            <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2"
+                    aria-label="Slide 3"></button>
+        </div>
+        <div class="carousel-inner">
+            <div class="carousel-item active">
+                <img src="{% static 'img/banner1.jpg' %}" class="d-block w-100" alt="...">
+            </div>
+            <div class="carousel-item">
+                <img src="{% static 'img/banner2.jpg' %}" class="d-block w-100" alt="...">
+            </div>
+            <div class="carousel-item">
+                <img src="{% static 'img/banner3.jpg' %}" class="d-block w-100" alt="...">
+            </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators"
+                data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators"
+                data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+</div>
+
+
+<div class="container" style="display: flex; flex-direction: row-reverse;">
+    <div id="status-block" class="card text-bg-light mb-3 " style="display: none; max-width: 18rem;">
+        <div class="card-header">Order</div>
+        <div class="status-card-body">
+            <p id='order-number' class='card-text ml-2'></p>
+            <p id='order-status' class='card-text ml-2'></p>
+        </div>
+    </div>
+</div>
+
+<div class="container" style="display: flex; flex-direction: row;">
+    {% for item in items %}
+    <div class="card" style="width: 18rem;">
+        {% with '/img/'|add:item.img as image_static %}
+        <img class="card-img-top" src="{% static image_static %}" alt="Card image cap">
+        {% endwith %}
+        <div class="card-body">
+            <h5 class="card-title">{{item.name}}</h5>
+            <p class="card-text" style="height: 60px;">{{item.description}}</p>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#exampleModal" data-pizza="{{item.name}}"
+                    onclick="choose(this);">
+                Choose
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="order" method="post" action="buy">
+                    {% csrf_token %}
+                    <div>
+                        <input type="text" class="address" name="address" placeholder="address">
+                    </div>
+                    <div>
+                        <input type="text" class="phone" name="phone" placeholder="phone">
+                    </div>
+                    <div>
+                        <input type="text" class="pizza" name="pizza" hidden="true">
+                    </div>
+                    <button id="request" type="button" class="btn btn-primary" style="position: relative; z-index: 2;">
+                        Order
+                    </button>
+                </form>
+            </div>
+            <div class="modal-footer"></div>
+        </div>
+    </div>
+</div>
+
+
+<script src="{% static 'js/jQuery3.6.0.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/order.js' %}"></script>
+<script src="{% static 'js/crazy_button.js' %}"></script>
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/bootstrap.min.css' %}">
+
+<script>
+$('#exampleModal').on('shown.bs.modal', function () {})
+</script>
+
+<script>
+window.getCookie = function(name) {
+  var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  if (match) return match[2];
+}
+</script>
+
+<script>
+    function updateStatus(){
+        if (getCookie("orderID") != null){
+          $('#order-number').first().text("Number: "+getCookie("orderID"))
+          $.ajax({
+            url: "getStatus",
+            data: {"orderID": getCookie("orderID") },
+            success: function(response){
+              $('#order-status').first().text("Status: "+response.status)
+            },
+            error: function(e,x,r){
+              console.log("error "+response.status)
+            }
+          });
+          return false;
+        }
+    }
+</script>
+
+<script>
+    var intervalId = window.setInterval(updateStatus, 10000);
+</script>
+
+<script>
+if (getCookie("orderID") != null){
+   document.getElementById("status-block").style.display = "block"
+}
+</script>
+<script>
+    $(document).ready(updateStatus)
+</script>
+
+</body>
+</html>
